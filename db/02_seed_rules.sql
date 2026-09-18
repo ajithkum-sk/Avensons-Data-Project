@@ -20,10 +20,10 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO rule (rule_code, title, purpose, audience, rule_group, severity,
                   needs_sales_data, params, sort_order) VALUES
 
-('R01_DBN_OVERDUE', 'DBN overdue alert',
+('R01_DBN_OVERDUE', 'DBN Overdue Alert',
  'Bounced cheque / debit note pending beyond the tolerated age.',
  'manager', 'credit', 'high', false,
- '{"days": 14, "min_amount": 10, "document_types": ["DBN"], "document_no_prefixes": ["DR"]}', 10),
+ '{"days": 14, "min_amount": 10, "document_type": ["DBN"], "document_no_prefixes": ["DR"]}', 10),
 
 ('R02_SAME_SALESMAN_DOUBLE_BILL', 'Same-salesman double bill',
  'A salesman billed the same shop again while his earlier bill is still pending.',

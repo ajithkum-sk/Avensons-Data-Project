@@ -63,27 +63,29 @@ export default function CustomerDrawer({ customerCode, onClose }) {
 
             <div className="card" style={{ marginBottom: 14 }}>
               <h3 style={{ marginBottom: 8 }}>Open documents ({data.documents.length})</h3>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Type</th><th>Bill</th><th>Date</th><th>Salesman</th>
-                    <th className="num">Amount</th><th className="num">Balance</th><th className="num">Overdue</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.documents.map((d) => (
-                    <tr key={`${d.document_type}-${d.document_no}`}>
-                      <td>{d.document_type}</td>
-                      <td>{d.document_no}</td>
-                      <td>{d.document_date ?? "—"}</td>
-                      <td>{d.salesman_name ?? "—"}</td>
-                      <td className="num">{money(d.amount)}</td>
-                      <td className="num">{money(d.balance)}</td>
-                      <td className="num">{d.overdue_days ?? d.due_days ?? "—"}</td>
+              <div className="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Type</th><th>Bill</th><th>Date</th><th>Salesman</th>
+                      <th className="num">Amount</th><th className="num">Balance</th><th className="num">Overdue</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {data.documents.map((d) => (
+                      <tr key={`${d.document_type}-${d.document_no}`}>
+                        <td>{d.document_type}</td>
+                        <td>{d.document_no}</td>
+                        <td>{d.document_date ?? "—"}</td>
+                        <td>{d.salesman_name ?? "—"}</td>
+                        <td className="num">{money(d.amount)}</td>
+                        <td className="num">{money(d.balance)}</td>
+                        <td className="num">{d.overdue_days ?? d.due_days ?? "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             {data.monthly_sales.length > 0 && (

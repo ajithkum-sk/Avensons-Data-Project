@@ -7,14 +7,12 @@ const PAGE = 100;
 export default function Violations({ ruleCode, rule, onBack }) {
   const [data, setData] = useState(null);
   const [search, setSearch] = useState("");
-  const [severity, setSeverity] = useState("");
   const [offset, setOffset] = useState(0);
   const [error, setError] = useState(null);
   const [openCustomer, setOpenCustomer] = useState(null);
 
   const params = { rule_code: ruleCode, limit: PAGE, offset };
   if (search.trim()) params.search = search.trim();
-  if (severity) params.severity = severity;
 
   const load = useCallback(async () => {
     try {
@@ -23,14 +21,14 @@ export default function Violations({ ruleCode, rule, onBack }) {
     } catch (err) {
       setError(err.message);
     }
-  }, [ruleCode, search, severity, offset]);
+  }, [ruleCode, search, offset]);
 
   useEffect(() => {
     const timer = setTimeout(load, search ? 250 : 0); // debounce typing
     return () => clearTimeout(timer);
   }, [load]);
 
-  useEffect(() => setOffset(0), [ruleCode, search, severity]);
+  useEffect(() => setOffset(0), [ruleCode, search]);
 
   return (
     <>
@@ -56,19 +54,21 @@ export default function Violations({ ruleCode, rule, onBack }) {
           style={{ width: 300 }}
           aria-label="Search this list"
         />
-        <select value={severity} onChange={(e) => setSeverity(e.target.value)} aria-label="Severity">
-          <option value="">All severities</option>
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="low">Low</option>
-        </select>
         <span className="spacer" />
         {data && (
           <span className="note">
             {count(data.total)} flags · {money(data.exposure)} at risk
           </span>
         )}
-        <a className="export-btn" href={api.csvUrl({ rule_code: ruleCode, ...(search ? { search } : {}), ...(severity ? { severity } : {}) })}>
+        <button type="button" className="ghost print-btn" onClick={() => window.print()} title="Print or save as PDF">
+          <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <path d="M5.5 7.5V3.5h9v4" strokeLinecap="round" strokeLinejoin="round" />
+            <rect x="3" y="7.5" width="14" height="6.5" rx="1.2" />
+            <path d="M5.5 12.5v4h9v-4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Print
+        </button>
+        <a className="export-btn" href={api.csvUrl({ rule_code: ruleCode, ...(search ? { search } : {}) })}>
           Export to Excel (CSV)
         </a>
       </div>

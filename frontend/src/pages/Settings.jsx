@@ -52,8 +52,8 @@ export default function Settings({ onSaved, onBack }) {
         </button>
       )}
       <div className="topbar">
-        <h1>Rule settings</h1>
-        <span className="meta">Every threshold here is a setting, not code. Re-check after saving.</span>
+        <h1>Configuration</h1>
+        <span className="meta">Configuration settings can be updated here. Please review before saving.</span>
       </div>
 
       {error && <div className="error">{error}</div>}
@@ -123,28 +123,28 @@ function GlobalForm({ config, onSave }) {
   const set = (key, value) => setDraft({ ...draft, [key]: value });
 
   return (
-    <div>
-      <div className="toolbar">
-        <label>
-          Ignore bills at or below{" "}
+    <div className="global-form">
+      <div className="toolbar single-line-toolbar">
+        <label className="field-inline">
+          <span>Ignore bills at or below</span>
           <input
             type="number"
             value={draft.min_balance}
             onChange={(e) => set("min_balance", Number(e.target.value))}
             style={{ width: 90 }}
-          />{" "}
-          rupees
+          />
+          <span>rupees</span>
         </label>
-        <label>
+        <label className="field-inline checkbox-label">
           <input
             type="checkbox"
             checked={!!draft.exclude_cigarette}
             onChange={(e) => set("exclude_cigarette", e.target.checked)}
-          />{" "}
-          Exclude cigarette routes
+          />
+          <span>Exclude cigarette routes</span>
         </label>
-        <label>
-          Extra days allowed on PP beats{" "}
+        <label className="field-inline">
+          <span>Extra days allowed on PP beats</span>
           <input
             type="number"
             value={draft.pp_tolerance_days}
@@ -153,28 +153,31 @@ function GlobalForm({ config, onSave }) {
           />
         </label>
       </div>
-      <div className="toolbar">
-        <label>
-          Cigarette salesman name prefixes{" "}
-          <input
-            value={(draft.cig_salesman_prefixes ?? []).join(", ")}
-            onChange={(e) =>
-              set("cig_salesman_prefixes", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))
-            }
-            style={{ width: 160 }}
-          />
-        </label>
-        <label>
-          Cigarette salesmen{" "}
-          <input
-            value={(draft.cig_salesman_names ?? []).join(", ")}
-            onChange={(e) =>
-              set("cig_salesman_names", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))
-            }
-            style={{ width: 300 }}
-          />
-        </label>
-        <button className="primary" onClick={() => onSave(draft)}>Save filters</button>
+
+      <div className="toolbar single-line-toolbar">
+        <div className="fields-straight">
+          <label className="field-inline">
+            <span>Cigarette salesman name prefixes</span>
+            <input
+              value={(draft.cig_salesman_prefixes ?? []).join(", ")}
+              onChange={(e) =>
+                set("cig_salesman_prefixes", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))
+              }
+              style={{ width: 160 }}
+            />
+          </label>
+          <label className="field-inline">
+            <span>Cigarette salesmen</span>
+            <input
+              value={(draft.cig_salesman_names ?? []).join(", ")}
+              onChange={(e) =>
+                set("cig_salesman_names", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))
+              }
+              style={{ width: 300 }}
+            />
+          </label>
+        </div>
+        <button className="primary save-right-btn" onClick={() => onSave(draft)}>Save filters</button>
       </div>
     </div>
   );
@@ -183,12 +186,12 @@ function GlobalForm({ config, onSave }) {
 function RuleRow({ rule, onSave }) {
   const [draft, setDraft] = useState(rule.params ?? {});
   const dirty = JSON.stringify(draft) !== JSON.stringify(rule.params ?? {});
+  const disabled = !rule.is_enabled;
 
   return (
-    <div style={{ borderBottom: "1px solid #edf0f3", padding: "12px 0" }}>
+    <div className={disabled ? "rule-row-disabled" : ""} style={{ borderBottom: "1px solid #edf0f3", padding: "12px 0" }}>
       <div className="toolbar" style={{ marginBottom: 6 }}>
         <strong>{rule.title}</strong>
-        <span className={`pill ${rule.severity}`}>{rule.severity}</span>
         <span className="note">{rule.rule_code}</span>
         {!rule.implemented && <span className="pill skipped">not implemented</span>}
         <span className="spacer" />
@@ -202,41 +205,49 @@ function RuleRow({ rule, onSave }) {
         </label>
       </div>
       <p className="note" style={{ margin: "0 0 8px" }}>{rule.purpose}</p>
-      <div className="toolbar">
-        {Object.entries(draft).map(([key, value]) => (
-          <label key={key} className="note">
-            {key.replace(/_/g, " ")}{" "}
-            {typeof value === "boolean" ? (
-              <input
-                type="checkbox"
-                checked={value}
-                onChange={(e) => setDraft({ ...draft, [key]: e.target.checked })}
-              />
-            ) : Array.isArray(value) ? (
-              <input
-                value={value.join(", ")}
-                onChange={(e) =>
-                  setDraft({ ...draft, [key]: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) })
-                }
-                style={{ width: 170 }}
-              />
-            ) : typeof value === "number" ? (
-              <input
-                type="number"
-                value={value}
-                onChange={(e) => setDraft({ ...draft, [key]: Number(e.target.value) })}
-                style={{ width: 80 }}
-              />
-            ) : (
-              <input
-                value={value ?? ""}
-                onChange={(e) => setDraft({ ...draft, [key]: e.target.value })}
-                style={{ width: 120 }}
-              />
-            )}
-          </label>
-        ))}
-        <button className="ghost" disabled={!dirty} onClick={() => onSave(rule.rule_code, { params: draft })}>
+
+      <div className="toolbar rule-fields-row">
+        <div className="rule-fields-container">
+          {Object.entries(draft).map(([key, value]) => (
+            <label key={key} className="field-inline note">
+              <span>{key.replace(/_/g, " ")}</span>
+              {typeof value === "boolean" ? (
+                <input
+                  type="checkbox"
+                  checked={value}
+                  onChange={(e) => setDraft({ ...draft, [key]: e.target.checked })}
+                />
+              ) : Array.isArray(value) ? (
+                <input
+                  value={value.join(", ")}
+                  onChange={(e) =>
+                    setDraft({ ...draft, [key]: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) })
+                  }
+                  style={{ width: 170 }}
+                />
+              ) : typeof value === "number" ? (
+                <input
+                  type="number"
+                  value={value}
+                  onChange={(e) => setDraft({ ...draft, [key]: Number(e.target.value) })}
+                  style={{ width: 80 }}
+                />
+              ) : (
+                <input
+                  value={value ?? ""}
+                  onChange={(e) => setDraft({ ...draft, [key]: e.target.value })}
+                  style={{ width: 120 }}
+                />
+              )}
+            </label>
+          ))}
+        </div>
+
+        <button
+          className="ghost save-right-btn"
+          disabled={!dirty}
+          onClick={() => onSave(rule.rule_code, { params: draft })}
+        >
           Save thresholds
         </button>
       </div>
@@ -262,28 +273,30 @@ function AddException({ rules, onAdded, onError }) {
   };
 
   return (
-    <div className="toolbar" style={{ marginTop: 12 }}>
-      <select
-        value={form.rule_code}
-        onChange={(e) => setForm({ ...form, rule_code: e.target.value })}
-        aria-label="Rule to skip"
-      >
-        {rules.map((r) => (
-          <option key={r.rule_code} value={r.rule_code}>{r.title}</option>
-        ))}
-      </select>
-      <input
-        placeholder="Customer code"
-        value={form.customer_code}
-        onChange={(e) => setForm({ ...form, customer_code: e.target.value })}
-      />
-      <input
-        placeholder="Why (optional)"
-        value={form.note}
-        onChange={(e) => setForm({ ...form, note: e.target.value })}
-        style={{ width: 240 }}
-      />
-      <button className="primary" onClick={add} disabled={!form.customer_code.trim()}>
+    <div className="toolbar single-line-toolbar" style={{ marginTop: 12 }}>
+      <div className="fields-straight">
+        <select
+          value={form.rule_code}
+          onChange={(e) => setForm({ ...form, rule_code: e.target.value })}
+          aria-label="Rule to skip"
+        >
+          {rules.map((r) => (
+            <option key={r.rule_code} value={r.rule_code}>{r.title}</option>
+          ))}
+        </select>
+        <input
+          placeholder="Customer code"
+          value={form.customer_code}
+          onChange={(e) => setForm({ ...form, customer_code: e.target.value })}
+        />
+        <input
+          placeholder="Why (optional)"
+          value={form.note}
+          onChange={(e) => setForm({ ...form, note: e.target.value })}
+          style={{ width: 240 }}
+        />
+      </div>
+      <button className="primary save-right-btn" onClick={add} disabled={!form.customer_code.trim()}>
         Add exception
       </button>
     </div>

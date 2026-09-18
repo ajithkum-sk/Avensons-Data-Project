@@ -63,45 +63,55 @@ export default function Dashboard({ summary, loading, onRefresh, onOpenRule, onB
         </div>
       </div>
 
-      <h2 style={{ marginBottom: 10 }}>Rules</h2>
-      <div className="rule-cards" style={{ marginBottom: 18 }}>
-        {by_rule.map((r) => (
-          <button
-            key={r.rule_code}
-            className={`rule-card${r.status === "skipped" ? " rule-card-skipped" : ""}`}
-            onClick={() => onOpenRule(r.rule_code)}
-          >
-            <div className="rule-card-top">
-              <strong>{r.title}</strong>
-              <span className={`pill ${r.severity}`}>{r.severity}</span>
-            </div>
-            <div className="note rule-card-audience">For: {r.audience}</div>
-
-            {r.status === "skipped" ? (
-              <div className="note rule-card-skip-msg">Not run: {r.message}</div>
-            ) : (
-              <>
-                <div className="rule-card-stats">
-                  <div>
-                    <span className="rule-card-num">{count(r.hits)}</span>
-                    <span className="rule-card-num-label">flags</span>
-                  </div>
-                  <div>
-                    <span className="rule-card-num">{count(r.customers)}</span>
-                    <span className="rule-card-num-label">outlets</span>
-                  </div>
-                  <div>
-                    <span className="rule-card-num rule-card-risk">{money(r.exposure)}</span>
-                    <span className="rule-card-num-label">at risk</span>
-                  </div>
-                </div>
-                <div className="bar rule-card-bar">
-                  <span style={{ width: `${(100 * (Number(r.exposure) || 0)) / worst}%` }} />
-                </div>
-              </>
-            )}
-          </button>
-        ))}
+      <div className="card" style={{ marginBottom: 18, padding: 0 }}>
+        <div style={{ padding: "16px 16px 0" }}>
+          <h2 style={{ marginBottom: 10 }}>Rules</h2>
+        </div>
+        <div className="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Rule</th>
+                <th>For</th>
+                <th className="num">Flags</th>
+                <th className="num">Outlets</th>
+                <th className="num">At risk</th>
+                <th style={{ width: 140 }}>Share of risk</th>
+              </tr>
+            </thead>
+            <tbody>
+              {by_rule.map((r) => {
+                const disabled = r.is_enabled === false;
+                return (
+                  <tr
+                    key={r.rule_code}
+                    className={`row-click${disabled ? " row-disabled" : ""}`}
+                    tabIndex={0}
+                    onClick={() => onOpenRule(r.rule_code)}
+                    onKeyDown={(e) => e.key === "Enter" && onOpenRule(r.rule_code)}
+                  >
+                    <td>
+                      <strong>{r.title}</strong>
+                      {disabled && <span className="pill skipped" style={{ marginLeft: 8 }}>off</span>}
+                      {r.status === "skipped" && !disabled && (
+                        <div className="note">Not run: {r.message}</div>
+                      )}
+                    </td>
+                    <td>{r.audience}</td>
+                    <td className="num">{r.status === "skipped" ? "—" : count(r.hits)}</td>
+                    <td className="num">{count(r.customers)}</td>
+                    <td className="num">{money(r.exposure)}</td>
+                    <td>
+                      <div className="bar">
+                        <span style={{ width: `${(100 * (Number(r.exposure) || 0)) / worst}%` }} />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div className="grid k2">

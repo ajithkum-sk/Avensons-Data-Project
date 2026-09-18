@@ -85,20 +85,51 @@ export default function App() {
   const goTo = (page) => setView({ page });
 
   return (
-    <div className="app-shell">
-      <header className="topnav">
-        <div className="topnav-brand">
-          <div className="topnav-logo-frame">
-            <img src={avensonsLogo} alt="Avensons Ventures" className="topnav-logo" />
+    <div className={`shell${collapsed ? " collapsed" : ""}`}>
+      <nav className="side">
+        <div className="brand">
+          <div className="brand-logo-frame">
+            <img src={avensonsLogo} alt="Avensons Ventures" className="brand-logo" />
           </div>
-          <strong>Avensons Ventures</strong>
+          {!collapsed && <strong>Avensons Ventures</strong>}
         </div>
 
-        <nav className="topnav-links">
+        <button
+          className="sidebar-toggle-inline"
+          onClick={() => setCollapsed((c) => !c)}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? "»" : "«"}
+        </button>
+
+        {!collapsed && (
+          <>
+            <div className="nav-group">Lists</div>
+            {rules.map((r) => (
+              <button
+                key={r.rule_code}
+                className={`nav-item${r.is_enabled === false ? " nav-item-disabled" : ""}`}
+                aria-current={view.page === "violations" && view.ruleCode === r.rule_code}
+                onClick={() => openRule(r.rule_code)}
+                title={r.is_enabled === false ? "This rule is turned off in Configuration" : undefined}
+              >
+                <span>{r.title}</span>
+                <span className="tally">
+                  {r.status === "skipped" ? "—" : count(r.hits)}
+                </span>
+              </button>
+            ))}
+          </>
+        )}
+      </nav>
+
+      <div className="content-col">
+        <header className="mainbar">
           {NAV_ITEMS.map((item) => (
             <button
               key={item.id}
-              className="topnav-item"
+              className="mainbar-item"
               aria-current={view.page === item.id}
               onClick={() => setView({ page: item.id })}
             >
@@ -106,39 +137,7 @@ export default function App() {
               <span>{item.label}</span>
             </button>
           ))}
-        </nav>
-      </header>
-
-      <div className={`shell${collapsed ? " collapsed" : ""}`}>
-        <nav className="side">
-          <button
-            className="sidebar-toggle-inline"
-            onClick={() => setCollapsed((c) => !c)}
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {collapsed ? "»" : "«"}
-          </button>
-
-          {!collapsed && (
-            <>
-              <div className="nav-group">Lists</div>
-              {rules.map((r) => (
-                <button
-                  key={r.rule_code}
-                  className="nav-item"
-                  aria-current={view.page === "violations" && view.ruleCode === r.rule_code}
-                  onClick={() => openRule(r.rule_code)}
-                >
-                  <span>{r.title}</span>
-                  <span className="tally">
-                    {r.status === "skipped" ? "—" : count(r.hits)}
-                  </span>
-                </button>
-              ))}
-            </>
-          )}
-        </nav>
+        </header>
 
         <main className="main">
           {error && (
